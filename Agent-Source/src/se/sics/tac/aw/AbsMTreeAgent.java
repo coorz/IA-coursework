@@ -139,7 +139,9 @@ public class AbsMTreeAgent extends AgentImpl {
   private float[] prices;
   
   //My own codes
-  private static int[][] entertainmentNeeds = new int[12][15];
+  private static int[][] entertainmentNeeds = new int[8][3];
+  private static int[] totalNeeds = new int[3];
+  
   
   protected void init(ArgEnumerator args) {
     prices = new float[agent.getAuctionNo()];
@@ -165,7 +167,11 @@ public class AbsMTreeAgent extends AgentImpl {
       }
     } else if (auctionCategory == TACAgent.CAT_ENTERTAINMENT) {
     	
-      /*int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
+      int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
+      if (alloc > 0){
+    	  
+      }
+      /*
       if (alloc != 0) {
 	Bid bid = new Bid(auction);
 	if (alloc < 0)
@@ -318,14 +324,56 @@ public class AbsMTreeAgent extends AgentImpl {
     int e1 = agent.getClientPreference(client, TACAgent.E1);
     int e2 = agent.getClientPreference(client, TACAgent.E2);
     int e3 = agent.getClientPreference(client, TACAgent.E3);
+    
+    //Calculate total needs for all clients.
+    totalNeeds[0] += e1;
+    totalNeeds[1] += e2;
+    totalNeeds[2] += e3;
+    
 
     // At least buy what each agent wants the most!!!
-    if ((e1 > e2) && (e1 > e3) && lastType == -1)
-      return TACAgent.TYPE_ALLIGATOR_WRESTLING;
-    if ((e2 > e1) && (e2 > e3) && lastType == -1)
-      return TACAgent.TYPE_AMUSEMENT;
-    if ((e3 > e1) && (e3 > e2) && lastType == -1)
-      return TACAgent.TYPE_MUSEUM;
+    //Make client's needs in order. Descent.
+    if ((e1 > e2) && (e1 > e3) && lastType == -1){
+    	if (e2 > e3){
+    		entertainmentNeeds[client][0] = e1;
+    	    entertainmentNeeds[client][1] = e2;
+    	    entertainmentNeeds[client][2] = e3;
+    	}
+    	else{
+    		entertainmentNeeds[client][0] = e1;
+    	    entertainmentNeeds[client][1] = e3;
+    	    entertainmentNeeds[client][2] = e2;
+    	}
+    	return TACAgent.TYPE_ALLIGATOR_WRESTLING;
+    }
+      
+    if ((e2 > e1) && (e2 > e3) && lastType == -1){
+    	if (e1 > e3){
+    		entertainmentNeeds[client][0] = e2;
+    	    entertainmentNeeds[client][1] = e1;
+    	    entertainmentNeeds[client][2] = e3;
+    	}
+    	else{
+    		entertainmentNeeds[client][0] = e2;
+    	    entertainmentNeeds[client][1] = e3;
+    	    entertainmentNeeds[client][2] = e1;
+    	}
+    	return TACAgent.TYPE_AMUSEMENT;
+    }
+      
+    if ((e3 > e1) && (e3 > e2) && lastType == -1){
+    	if (e1 > e2){
+    		entertainmentNeeds[client][0] = e3;
+    	    entertainmentNeeds[client][1] = e1;
+    	    entertainmentNeeds[client][2] = e2;
+    	}else {
+    		entertainmentNeeds[client][0] = e3;
+    	    entertainmentNeeds[client][1] = e2;
+    	    entertainmentNeeds[client][2] = e1;
+    	}
+    	return TACAgent.TYPE_MUSEUM;
+    }
+      
     return -1;
   }
 
