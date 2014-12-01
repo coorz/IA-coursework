@@ -138,9 +138,11 @@ public class AbsMTreeAgent extends AgentImpl {
 
   private float[] prices;
   
-  //My own codes
+  //Record all entertianmentNeeds.
   private static int[][] entertainmentNeeds = new int[8][3];
   private static int[] totalNeeds = new int[3];
+  //Total times for this game.
+  private static final long TOTAL_TIME = 9*60*1000;
   
   
   protected void init(ArgEnumerator args) {
@@ -168,24 +170,104 @@ public class AbsMTreeAgent extends AgentImpl {
     } else if (auctionCategory == TACAgent.CAT_ENTERTAINMENT) {
     	
       int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
-      if (alloc > 0){
-    	  
-      }
-      /*
+    
       if (alloc != 0) {
-	Bid bid = new Bid(auction);
-	if (alloc < 0)
-	  prices[auction] = 200f - (agent.getGameTime() * 120f) / 720000;
-	else
-	  prices[auction] = 50f + (agent.getGameTime() * 100f) / 720000;
-	bid.addBidPoint(alloc, prices[auction]);
-	if (DEBUG) {
-	  log.finest("submitting bid with alloc="
-		     + agent.getAllocation(auction)
-		     + " own=" + agent.getOwn(auction));
-	}
-	agent.submitBid(bid);
-      }*/
+		Bid bid = new Bid(auction);
+		if (alloc < 0){
+			//Sell price. 
+			if ( auctionCategory >= 16 && auctionCategory <= 19){
+				float averageNeeds = totalNeeds[0] / 8f;
+				int maxNeed = Integer.MIN_VALUE;
+				for (int i = 0 ; i < entertainmentNeeds.length; i++){
+					if ( maxNeed < entertainmentNeeds[i][0]){
+						maxNeed = entertainmentNeeds[i][0];
+					}
+				}
+				prices[auction] = averageNeeds + ((agent.getGameTime()) / TOTAL_TIME) * averageNeeds;
+				if ( maxNeed <= prices[auction]){
+					prices[auction] = maxNeed - 50;
+				}
+	      	  }
+	      	  else if ( auctionCategory >= 20 && auctionCategory <= 23){
+	      		float averageNeeds = totalNeeds[1] / 8f;
+				int maxNeed = Integer.MIN_VALUE;
+				for (int i = 0 ; i < entertainmentNeeds.length; i++){
+					if ( maxNeed < entertainmentNeeds[i][1]){
+						maxNeed = entertainmentNeeds[i][1];
+					}
+				}
+				prices[auction] = averageNeeds + ((agent.getGameTime()) / TOTAL_TIME) * averageNeeds;
+				if ( maxNeed <= prices[auction]){
+					prices[auction] = maxNeed - 50;
+				}
+	      	  }
+	      	  else if ( auctionCategory >= 24 && auctionCategory <= 27){
+	      		float averageNeeds = totalNeeds[2] / 8f;
+				int maxNeed = Integer.MIN_VALUE;
+				for (int i = 0 ; i < entertainmentNeeds.length; i++){
+					if ( maxNeed < entertainmentNeeds[i][2]){
+						maxNeed = entertainmentNeeds[i][2];
+					}
+				}
+				prices[auction] = averageNeeds + ((agent.getGameTime() / TOTAL_TIME)) * averageNeeds;
+				if ( maxNeed <= prices[auction]){
+					prices[auction] = maxNeed;
+				}
+	      	  }
+			  
+		}
+			
+		else{
+			//Buy price.
+			int minE = Integer.MAX_VALUE;
+			int maxE = Integer.MIN_VALUE;
+      	  if ( auctionCategory >= 16 && auctionCategory <= 19){
+      		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
+          		 
+      			  if ( minE > entertainmentNeeds[j][0]){
+      				  minE = entertainmentNeeds[j][0];
+      			  }
+      			  if ( maxE < entertainmentNeeds[j][0]){
+      				maxE = entertainmentNeeds[j][0];
+      			  }
+          		 
+          	  }
+      	  }
+      	  else if ( auctionCategory >= 20 && auctionCategory <= 23){
+      		 for (int j = 0 ; j < entertainmentNeeds.length ; j++){
+          		 
+     			  if ( minE > entertainmentNeeds[j][1]){
+     				  minE = entertainmentNeeds[j][1];
+     			  }
+     			  if ( maxE < entertainmentNeeds[j][1]){
+     				 maxE = entertainmentNeeds[j][1];
+     			  }
+         		 
+         	  }
+      	  }
+      	  else if ( auctionCategory >= 24 && auctionCategory <= 27){
+      		 for (int j = 0 ; j < entertainmentNeeds.length ; j++){
+          		 
+     			  if ( minE > entertainmentNeeds[j][2]){
+     				  minE = entertainmentNeeds[j][2];
+     			  }
+     			  if ( maxE < entertainmentNeeds[j][2]){
+     				 maxE = entertainmentNeeds[j][2];
+     			  }
+         		 
+         	  }
+      		 prices[auctionCategory] = prices[auctionCategory] + ((agent.getGameTime() / TOTAL_TIME)) * (maxE - minE);
+      	  }
+		}
+			
+		bid.addBidPoint(alloc, prices[auction]);
+		if (DEBUG) {
+		  log.finest("submitting bid with alloc="
+			     + agent.getAllocation(auction)
+			     + " own=" + agent.getOwn(auction));
+		}
+		agent.submitBid(bid);
+      }
     }
   }
 
@@ -245,13 +327,55 @@ public class AbsMTreeAgent extends AgentImpl {
 	}
 	break;
       case TACAgent.CAT_ENTERTAINMENT:
-	if (alloc < 0) {
-	  price = 200;
-	  prices[i] = 200f;
-	} else if (alloc > 0) {
-	  price = 50;
-	  prices[i] = 50f;
-	}
+    	  //If we need to sell, we set a higher price which is the average of the all client's prices.
+    	  if (alloc < 0){
+        	  float bidPrice = 0;
+        	  if ( i >= 16 && i <= 19){
+        		  bidPrice = totalNeeds[0] / 8f;
+        	  }
+        	  else if ( i >= 20 && i <= 23){
+        		  bidPrice = totalNeeds[1] / 8f;
+        	  }
+        	  else if ( i >= 24 && i <= 27){
+        		  bidPrice = totalNeeds[2] / 8f;
+        	  }
+        	  prices[i] = bidPrice;
+          }
+    	 //Buy the entertainment. We buy the ticket with the lowes's price among the 8 clients.
+          if (alloc > 0){
+        	  
+        	  int minE = Integer.MAX_VALUE;
+        	  if ( i >= 16 && i <= 19){
+        		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
+            		 
+        			  if ( minE > entertainmentNeeds[j][0]){
+        				  minE = entertainmentNeeds[j][0];
+        			  }
+            		 
+            	  }
+        	  }
+        	  else if ( i >= 20 && i <= 23){
+        		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
+             		 
+        			  if ( minE > entertainmentNeeds[j][1]){
+        				  minE = entertainmentNeeds[j][1];
+        			  }
+            		 
+            	  }
+        	  }
+        	  else if ( i >= 24 && i <= 27){
+        		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
+             		 
+        			  if ( minE > entertainmentNeeds[j][2]){
+        				  minE = entertainmentNeeds[j][2];
+        			  }
+            		 
+            	  }
+        	  }
+        	 
+        	  prices[i] = minE;
+          }
+    	  
 	break;
       default:
 	break;
