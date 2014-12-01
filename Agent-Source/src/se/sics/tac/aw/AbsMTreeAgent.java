@@ -453,48 +453,24 @@ public class AbsMTreeAgent extends AgentImpl {
     totalNeeds[0] += e1;
     totalNeeds[1] += e2;
     totalNeeds[2] += e3;
-    
+    //Record every client's entertainment needs.
+    entertainmentNeeds[client][0] = e1;
+    entertainmentNeeds[client][1] = e2;
+    entertainmentNeeds[client][2] = e3;
 
     // At least buy what each agent wants the most!!!
     //Make client's needs in order. Descent.
     if ((e1 > e2) && (e1 > e3) && lastType == -1){
-    	if (e2 > e3){
-    		entertainmentNeeds[client][0] = e1;
-    	    entertainmentNeeds[client][1] = e2;
-    	    entertainmentNeeds[client][2] = e3;
-    	}
-    	else{
-    		entertainmentNeeds[client][0] = e1;
-    	    entertainmentNeeds[client][1] = e3;
-    	    entertainmentNeeds[client][2] = e2;
-    	}
+    	
     	return TACAgent.TYPE_ALLIGATOR_WRESTLING;
     }
       
     if ((e2 > e1) && (e2 > e3) && lastType == -1){
-    	if (e1 > e3){
-    		entertainmentNeeds[client][0] = e2;
-    	    entertainmentNeeds[client][1] = e1;
-    	    entertainmentNeeds[client][2] = e3;
-    	}
-    	else{
-    		entertainmentNeeds[client][0] = e2;
-    	    entertainmentNeeds[client][1] = e3;
-    	    entertainmentNeeds[client][2] = e1;
-    	}
+    	
     	return TACAgent.TYPE_AMUSEMENT;
     }
       
     if ((e3 > e1) && (e3 > e2) && lastType == -1){
-    	if (e1 > e2){
-    		entertainmentNeeds[client][0] = e3;
-    	    entertainmentNeeds[client][1] = e1;
-    	    entertainmentNeeds[client][2] = e2;
-    	}else {
-    		entertainmentNeeds[client][0] = e3;
-    	    entertainmentNeeds[client][1] = e2;
-    	    entertainmentNeeds[client][2] = e1;
-    	}
     	return TACAgent.TYPE_MUSEUM;
     }
       
