@@ -173,95 +173,30 @@ public class AbsMTreeAgent extends AgentImpl {
     } else if (auctionCategory == TACAgent.CAT_ENTERTAINMENT) {
     	
       int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
-    
+      Bid bid = new Bid(auction);
       if (alloc != 0) {
-		Bid bid = new Bid(auction);
+    	int minE = entertainmentNeedsMaxMin[calculateType(auctionCategory)][1];
+	    int maxE = entertainmentNeedsMaxMin[calculateType(auctionCategory)][1];
+	    float averageNeed = totalNeedsAverage[calculateType(auctionCategory)];
 		if (alloc < 0){
 			//Sell price. 
-			if ( auctionCategory >= 16 && auctionCategory <= 19){
-				float averageNeeds = totalNeeds[0] / 8f;
-				int maxNeed = Integer.MIN_VALUE;
-				for (int i = 0 ; i < entertainmentNeeds.length; i++){
-					if ( maxNeed < entertainmentNeeds[i][0]){
-						maxNeed = entertainmentNeeds[i][0];
-					}
-				}
-				prices[auction] = averageNeeds + ((agent.getGameTime()) / TOTAL_TIME) * averageNeeds;
-				if ( maxNeed <= prices[auction]){
-					prices[auction] = maxNeed - 50;
-				}
-	      	  }
-	      	  else if ( auctionCategory >= 20 && auctionCategory <= 23){
-	      		float averageNeeds = totalNeeds[1] / 8f;
-				int maxNeed = Integer.MIN_VALUE;
-				for (int i = 0 ; i < entertainmentNeeds.length; i++){
-					if ( maxNeed < entertainmentNeeds[i][1]){
-						maxNeed = entertainmentNeeds[i][1];
-					}
-				}
-				prices[auction] = averageNeeds + ((agent.getGameTime()) / TOTAL_TIME) * averageNeeds;
-				if ( maxNeed <= prices[auction]){
-					prices[auction] = maxNeed - 50;
-				}
-	      	  }
-	      	  else if ( auctionCategory >= 24 && auctionCategory <= 27){
-	      		float averageNeeds = totalNeeds[2] / 8f;
-				int maxNeed = Integer.MIN_VALUE;
-				for (int i = 0 ; i < entertainmentNeeds.length; i++){
-					if ( maxNeed < entertainmentNeeds[i][2]){
-						maxNeed = entertainmentNeeds[i][2];
-					}
-				}
-				prices[auction] = averageNeeds + ((agent.getGameTime() / TOTAL_TIME)) * averageNeeds;
-				if ( maxNeed <= prices[auction]){
-					prices[auction] = maxNeed;
-				}
-	      	  }
-			  
+			//Single price;
+			prices[auction] = averageNeed + ((agent.getGameTime() / TOTAL_TIME)) * (maxE - averageNeed);
+			
 		}
 			
 		else{
 			//Buy price.
-			int minE = Integer.MAX_VALUE;
-			int maxE = Integer.MIN_VALUE;
-      	  if ( auctionCategory >= 16 && auctionCategory <= 19){
-      		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
-          		 
-      			  if ( minE > entertainmentNeeds[j][0]){
-      				  minE = entertainmentNeeds[j][0];
-      			  }
-      			  if ( maxE < entertainmentNeeds[j][0]){
-      				maxE = entertainmentNeeds[j][0];
-      			  }
-          		 
-          	  }
+			//Single price.
+			prices[auctionCategory] = prices[auctionCategory] + ((agent.getGameTime() / TOTAL_TIME)) * (averageNeed - minE);
       	  }
-      	  else if ( auctionCategory >= 20 && auctionCategory <= 23){
-      		 for (int j = 0 ; j < entertainmentNeeds.length ; j++){
-          		 
-     			  if ( minE > entertainmentNeeds[j][1]){
-     				  minE = entertainmentNeeds[j][1];
-     			  }
-     			  if ( maxE < entertainmentNeeds[j][1]){
-     				 maxE = entertainmentNeeds[j][1];
-     			  }
-         		 
-         	  }
-      	  }
-      	  else if ( auctionCategory >= 24 && auctionCategory <= 27){
-      		 for (int j = 0 ; j < entertainmentNeeds.length ; j++){
-          		 
-     			  if ( minE > entertainmentNeeds[j][2]){
-     				  minE = entertainmentNeeds[j][2];
-     			  }
-     			  if ( maxE < entertainmentNeeds[j][2]){
-     				 maxE = entertainmentNeeds[j][2];
-     			  }
-         		 
-         	  }
-      		 prices[auctionCategory] = prices[auctionCategory] + ((agent.getGameTime() / TOTAL_TIME)) * (maxE - minE);
-      	  }
+		
+		if ( prices[auction] > maxE){
+			prices[auction] = (maxE - 20) ;
+			}
+		prices[auction] = prices[auction] * alloc;
 		}
+      
 			
 		bid.addBidPoint(alloc, prices[auction]);
 		if (DEBUG) {
@@ -271,7 +206,6 @@ public class AbsMTreeAgent extends AgentImpl {
 		}
 		agent.submitBid(bid);
       }
-    }
   }
 
   public void quoteUpdated(int auctionCategory) {
@@ -355,12 +289,12 @@ public class AbsMTreeAgent extends AgentImpl {
     	  //If we need to sell, we set a higher price which is the average of the all client's prices.
     	  if (alloc < 0){
         	  
-        	  prices[i] = totalNeedsAverage[calculateType(i)];
+        	  prices[i] = totalNeedsAverage[calculateType(i)] * alloc;
           }
     	 //Buy the entertainment. We buy the ticket with the lowes's price among the 8 clients.
           if (alloc > 0){
         	        	 
-        	  prices[i] = entertainmentNeedsMaxMin[calculateType(i)][1];
+        	  prices[i] = entertainmentNeedsMaxMin[calculateType(i)][1] * alloc;
           }
     	  
 	break;
