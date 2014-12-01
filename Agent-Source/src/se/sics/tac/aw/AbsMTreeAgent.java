@@ -140,7 +140,10 @@ public class AbsMTreeAgent extends AgentImpl {
   
   //Record all entertianmentNeeds.
   private static int[][] entertainmentNeeds = new int[8][3];
+  private static int[][] entertainmentNeedsMaxMin = new int[3][2];
+  
   private static int[] totalNeeds = new int[3];
+  private static float[] totalNeedsAverage = new float[3];
   //Total times for this game.
   private static final long TOTAL_TIME = 9*60*1000;
   
@@ -312,6 +315,26 @@ public class AbsMTreeAgent extends AgentImpl {
 
   private void sendBids() {
 	//Calculate all averages and maxE/minE here.  
+	  for (int i = 0 ; i < totalNeeds.length ; i++){
+		  totalNeedsAverage[i] =  totalNeeds[i] / 8f;
+	  }
+	  
+	  for (int i = 0; i < 3; i++){
+		  int maxE = Integer.MIN_VALUE;
+		  int minE = Integer.MAX_VALUE;
+		  
+		  for ( int j = 0; j < entertainmentNeeds.length ; j++){
+			  if ( maxE < entertainmentNeeds[j][i]){
+				  maxE = entertainmentNeeds[j][i];
+			  }
+			  if ( minE > entertainmentNeeds[j][i]){
+				  minE = entertainmentNeeds[j][i];
+			  }
+		  }
+		  entertainmentNeedsMaxMin[i][0] = maxE;
+		  entertainmentNeedsMaxMin[i][1] = minE;
+	  }
+	 
 	
     for (int i = 0, n = agent.getAuctionNo(); i < n; i++) {
       int alloc = agent.getAllocation(i) - agent.getOwn(i);
@@ -331,51 +354,13 @@ public class AbsMTreeAgent extends AgentImpl {
       case TACAgent.CAT_ENTERTAINMENT:
     	  //If we need to sell, we set a higher price which is the average of the all client's prices.
     	  if (alloc < 0){
-        	  float bidPrice = 0;
-        	  if ( i >= 16 && i <= 19){
-        		  bidPrice = totalNeeds[0] / 8f;
-        	  }
-        	  else if ( i >= 20 && i <= 23){
-        		  bidPrice = totalNeeds[1] / 8f;
-        	  }
-        	  else if ( i >= 24 && i <= 27){
-        		  bidPrice = totalNeeds[2] / 8f;
-        	  }
-        	  prices[i] = bidPrice;
+        	  
+        	  prices[i] = totalNeedsAverage[calculateType(i)];
           }
     	 //Buy the entertainment. We buy the ticket with the lowes's price among the 8 clients.
           if (alloc > 0){
-        	  
-        	  int minE = Integer.MAX_VALUE;
-        	  if ( i >= 16 && i <= 19){
-        		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
-            		 
-        			  if ( minE > entertainmentNeeds[j][0]){
-        				  minE = entertainmentNeeds[j][0];
-        			  }
-            		 
-            	  }
-        	  }
-        	  else if ( i >= 20 && i <= 23){
-        		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
-             		 
-        			  if ( minE > entertainmentNeeds[j][1]){
-        				  minE = entertainmentNeeds[j][1];
-        			  }
-            		 
-            	  }
-        	  }
-        	  else if ( i >= 24 && i <= 27){
-        		  for (int j = 0 ; j < entertainmentNeeds.length ; j++){
-             		 
-        			  if ( minE > entertainmentNeeds[j][2]){
-        				  minE = entertainmentNeeds[j][2];
-        			  }
-            		 
-            	  }
-        	  }
-        	 
-        	  prices[i] = minE;
+        	        	 
+        	  prices[i] = entertainmentNeedsMaxMin[calculateType(i)][1];
           }
     	  
 	break;
@@ -392,6 +377,19 @@ public class AbsMTreeAgent extends AgentImpl {
 	agent.submitBid(bid);
       }
     }
+  }
+  
+  private int calculateType(int i){
+	  if ( i >= 16 && i <= 19){
+		 return 0;
+	  }
+	  else if ( i >= 20 && i <= 23){
+		 return 1;
+	  }
+	  else if ( i >= 24 && i <= 27){
+		  return 2;
+	  }
+	  return 0;
   }
 
   private void calculateAllocation() {
