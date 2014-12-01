@@ -311,6 +311,8 @@ public class AbsMTreeAgent extends AgentImpl {
   }
 
   private void sendBids() {
+	//Calculate all averages and maxE/minE here.  
+	
     for (int i = 0, n = agent.getAuctionNo(); i < n; i++) {
       int alloc = agent.getAllocation(i) - agent.getOwn(i);
       float price = -1f;
