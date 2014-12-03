@@ -144,7 +144,6 @@ public class AbsMTreeAgent extends AgentImpl {
   private static int[][] entertainmentNeeds = new int[8][3];
   private static int[][] entertainmentNeedsMaxMin = new int[3][2];
   
-  private static int[] totalNeeds = new int[3];
   private static float[] totalNeedsAverage = new float[3];
   //Total times for this game.
   private static final long TOTAL_TIME = 9*60*1000;
@@ -180,68 +179,73 @@ public class AbsMTreeAgent extends AgentImpl {
     int auctionCategory = agent.getAuctionCategory(auction);
     
     if (auctionCategory == TACAgent.CAT_FLIGHT) {
-    	ownFlight[auctionCategory] = agent.getOwn(auction);
-    	PricesTime fpt = new PricesTime();
-    	fpt.time = agent.getGameTime();
-    	fpt.price = quote.getBidPrice();
-    	flightPrice[auction].prirces.add(fpt);
+//    	ownFlight[auctionCategory] = agent.getOwn(auction);
+//    	PricesTime fpt = new PricesTime();
+//    	fpt.time = agent.getGameTime();
+//    	fpt.price = quote.getBidPrice();
+//    	flightPrice[auction].prirces.add(fpt);
     }
     
     if (auctionCategory == TACAgent.CAT_HOTEL) {
-    	if ( quote.isAuctionClosed()) {
-    		closedHotel[auction - 8] = 1;
-    	}
-    	int alloc = agent.getAllocation(auction);
-    	lackHotel[auction -8] = alloc;
-    	
-    	PricesTime fpt = new PricesTime();
-    	fpt.time = agent.getGameTime();
-    	fpt.price = quote.getBidPrice();
-    	hotelPrice[auction -8 ].prirces.add(fpt);
-    	ownHotel[auctionCategory - 8] = agent.getOwn(auctionCategory);
-    	
-    	float a = agent.getGameTime() / TOTAL_TIME;
+//    	if ( quote.isAuctionClosed()) {
+//    		closedHotel[auction - 8] = 1;
+//    	}
+//    	int alloc = agent.getAllocation(auction);
+//    	lackHotel[auction -8] = alloc;
+//    	
+//    	PricesTime fpt = new PricesTime();
+//    	fpt.time = agent.getGameTime();
+//    	fpt.price = quote.getBidPrice();
+//    	hotelPrice[auction -8 ].prirces.add(fpt);
+//    	ownHotel[auctionCategory - 8] = agent.getOwn(auctionCategory);
+//    	
+//    	float a = agent.getGameTime() / TOTAL_TIME;
         
     	
-//	      int alloc = agent.getAllocation(auction);
-//	      if (alloc > 0 && quote.hasHQW(agent.getBid(auction)) &&
-//		  quote.getHQW() < alloc) {
-//		Bid bid = new Bid(auction);
-//		// Can not own anything in hotel auctions...
-//		prices[auction] = quote.getAskPrice() + 50;
-//		bid.addBidPoint(alloc, prices[auction]);
-//		if (DEBUG) {
-//		  log.finest("submitting bid with alloc="
-//			     + agent.getAllocation(auction)
-//			     + " own=" + agent.getOwn(auction));
-//		}
-//		agent.submitBid(bid);
-//      }
+	      int alloc = agent.getAllocation(auction);
+	      if (alloc > 0 && quote.hasHQW(agent.getBid(auction)) &&
+		  quote.getHQW() < alloc) {
+			Bid bid = new Bid(auction);
+			// Can not own anything in hotel auctions...
+			prices[auction] = quote.getAskPrice() + 50;
+			bid.addBidPoint(alloc, prices[auction]);
+			if (DEBUG) {
+			  log.finest("submitting bid with alloc="
+				     + agent.getAllocation(auction)
+				     + " own=" + agent.getOwn(auction));
+			}
+			agent.submitBid(bid);
+      }
     } else if (auctionCategory == TACAgent.CAT_ENTERTAINMENT) {
     	
       int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
       Bid bid = new Bid(auction);
       if (alloc != 0) {
-    	int minE = entertainmentNeedsMaxMin[calculateType(auctionCategory)][1];
-	    int maxE = entertainmentNeedsMaxMin[calculateType(auctionCategory)][1];
-	    float averageNeed = totalNeedsAverage[calculateType(auctionCategory)];
+    	int minE = entertainmentNeedsMaxMin[calculateEType(auction)][1];
+	    int maxE = entertainmentNeedsMaxMin[calculateEType(auction)][0];
+	    float averageNeed = totalNeedsAverage[calculateEType(auction)];
 		if (alloc < 0){
 			//Sell price. 
 			//Single price;
-			prices[auction] = averageNeed + ((agent.getGameTime() / TOTAL_TIME)) * (maxE - averageNeed);
+			prices[auction] = averageNeed - (((float)agent.getGameTime() / TOTAL_TIME)) * (maxE - minE) * 8;
 			
+			if ( prices[auction] < minE){
+				prices[auction] = minE;
+			}
+		    	
 		}
 			
 		else{
 			//Buy price.
 			//Single price.
-			prices[auctionCategory] = prices[auctionCategory] + ((agent.getGameTime() / TOTAL_TIME)) * (averageNeed - minE);
+			prices[auction] = prices[auction] + (((float)agent.getGameTime() / TOTAL_TIME)) * (maxE - minE) * 8;
+			if ( prices[auction] > averageNeed){
+				prices[auction] = averageNeed;
+			}
       	  }
 		
-		if ( prices[auction] > maxE){
-			prices[auction] = (maxE - 20) ;
-			}
-		prices[auction] = prices[auction] * alloc;
+		
+		prices[auction] = prices[auction] ;
 		}
       
 			
@@ -319,11 +323,13 @@ public class AbsMTreeAgent extends AgentImpl {
 
   private void sendBids() {
 	//Calculate all averages and maxE/minE here.  
-	  for (int i = 0 ; i < totalNeeds.length ; i++){
-		  totalNeedsAverage[i] =  totalNeeds[i] / 8f;
-	  }
 	  
+	  
+	  int sumE1 = 0;
+	  int sumE2 = 0;
+	  int sumE3 = 0;
 	  for (int i = 0; i < 3; i++){
+		 
 		  int maxE = Integer.MIN_VALUE;
 		  int minE = Integer.MAX_VALUE;
 		  
@@ -334,10 +340,26 @@ public class AbsMTreeAgent extends AgentImpl {
 			  if ( minE > entertainmentNeeds[j][i]){
 				  minE = entertainmentNeeds[j][i];
 			  }
+			  if ( i == 0){
+				  sumE1 += entertainmentNeeds[j][i];
+				  
+			  }
+			  if ( i == 1){
+				  sumE2 += entertainmentNeeds[j][i];
+				  
+			  }
+			  if ( i == 2){
+				  sumE3 += entertainmentNeeds[j][i];
+				  
+			  }
 		  }
+		  
 		  entertainmentNeedsMaxMin[i][0] = maxE;
 		  entertainmentNeedsMaxMin[i][1] = minE;
 	  }
+	  totalNeedsAverage[0] = sumE1 / 8f;
+	  totalNeedsAverage[1] = sumE2 / 8f;
+	  totalNeedsAverage[2] = sumE3 / 8f;
 	 
 	
     for (int i = 0, n = agent.getAuctionNo(); i < n; i++) {
@@ -359,12 +381,12 @@ public class AbsMTreeAgent extends AgentImpl {
     	  //If we need to sell, we set a higher price which is the average of the all client's prices.
     	  if (alloc < 0){
         	  
-        	  prices[i] = totalNeedsAverage[calculateType(i)] * alloc * (2/3f);
+    		  prices[i] = entertainmentNeedsMaxMin[calculateEType(i)][0] * Math.abs(alloc);
           }
     	 //Buy the entertainment. We buy the ticket with the lowes's price among the 8 clients.
           if (alloc > 0){
         	        	 
-        	  prices[i] = entertainmentNeedsMaxMin[calculateType(i)][1] * alloc;
+        	  prices[i] = entertainmentNeedsMaxMin[calculateEType(i)][1] * alloc;
           }
     	  
 	break;
@@ -383,7 +405,7 @@ public class AbsMTreeAgent extends AgentImpl {
     }
   }
   
-  private int calculateType(int i){
+  private int calculateEType(int i){
 	  if ( i >= 16 && i <= 19){
 		 return 0;
 	  }
@@ -453,10 +475,6 @@ public class AbsMTreeAgent extends AgentImpl {
     int e2 = agent.getClientPreference(client, TACAgent.E2);
     int e3 = agent.getClientPreference(client, TACAgent.E3);
     
-    //Calculate total needs for all clients.
-    totalNeeds[0] += e1;
-    totalNeeds[1] += e2;
-    totalNeeds[2] += e3;
     //Record every client's entertainment needs.
     entertainmentNeeds[client][0] = e1;
     entertainmentNeeds[client][1] = e2;
