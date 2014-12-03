@@ -127,6 +127,8 @@
 
 package se.sics.tac.aw;
 import se.sics.tac.util.ArgEnumerator;
+
+import java.util.ArrayList;
 import java.util.logging.*;
 
 public class AbsMTreeAgent extends AgentImpl {
@@ -146,30 +148,52 @@ public class AbsMTreeAgent extends AgentImpl {
   private static float[] totalNeedsAverage = new float[3];
   //Total times for this game.
   private static final long TOTAL_TIME = 9*60*1000;
+ 
+  //Flight
+  private int[] ownFlight = new int[8];
+  
+  
+  //Hotel
+  private class HotelInfo{
+	  private ArrayList<Float> flightPrirces = new ArrayList<Float>();
+	  private float tradePrices = -1;
+	  private int counter = 0;
+  }
+  HotelInfo[] hotelInfo = new HotelInfo[8];
   
   
   protected void init(ArgEnumerator args) {
     prices = new float[agent.getAuctionNo()];
   }
+ 
 
   public void quoteUpdated(Quote quote) {
     int auction = quote.getAuction();
     int auctionCategory = agent.getAuctionCategory(auction);
+    
+    if (auctionCategory == TACAgent.CAT_FLIGHT) {
+    	ownFlight[auctionCategory] = agent.getOwn(auction);
+    }
+    
     if (auctionCategory == TACAgent.CAT_HOTEL) {
-      int alloc = agent.getAllocation(auction);
-      if (alloc > 0 && quote.hasHQW(agent.getBid(auction)) &&
-	  quote.getHQW() < alloc) {
-	Bid bid = new Bid(auction);
-	// Can not own anything in hotel auctions...
-	prices[auction] = quote.getAskPrice() + 50;
-	bid.addBidPoint(alloc, prices[auction]);
-	if (DEBUG) {
-	  log.finest("submitting bid with alloc="
-		     + agent.getAllocation(auction)
-		     + " own=" + agent.getOwn(auction));
-	}
-	agent.submitBid(bid);
-      }
+    	hotelInfo[auctionCategory - 8 ].flightPrirces.add(quote.getBidPrice());
+    	hotelInfo[auctionCategory - 8 ].counter++;
+    	float a = agent.getGameTime() / TOTAL_TIME;
+    	
+//	      int alloc = agent.getAllocation(auction);
+//	      if (alloc > 0 && quote.hasHQW(agent.getBid(auction)) &&
+//		  quote.getHQW() < alloc) {
+//		Bid bid = new Bid(auction);
+//		// Can not own anything in hotel auctions...
+//		prices[auction] = quote.getAskPrice() + 50;
+//		bid.addBidPoint(alloc, prices[auction]);
+//		if (DEBUG) {
+//		  log.finest("submitting bid with alloc="
+//			     + agent.getAllocation(auction)
+//			     + " own=" + agent.getOwn(auction));
+//		}
+//		agent.submitBid(bid);
+//      }
     } else if (auctionCategory == TACAgent.CAT_ENTERTAINMENT) {
     	
       int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
@@ -289,7 +313,7 @@ public class AbsMTreeAgent extends AgentImpl {
     	  //If we need to sell, we set a higher price which is the average of the all client's prices.
     	  if (alloc < 0){
         	  
-        	  prices[i] = totalNeedsAverage[calculateType(i)] * alloc;
+        	  prices[i] = totalNeedsAverage[calculateType(i)] * alloc * (2/3f);
           }
     	 //Buy the entertainment. We buy the ticket with the lowes's price among the 8 clients.
           if (alloc > 0){
