@@ -230,7 +230,7 @@ public class AbsMTreeAgent extends AgentImpl {
 			//Sell price. 
 			//Single price;
 			float bidPrice = quote.getBidPrice();
-			prices[auction] = averageNeed - (((float)agent.getGameTime() / (TOTAL_TIME))) * ( averageNeed );
+			prices[auction] = averageNeed - (((float)agent.getGameTime() / (TOTAL_TIME))) * ( averageNeed ); //Rate can be changed.
 			
 			if ( prices[auction] >= bidPrice && bidPrice >= averageNeed){
 				prices[auction] = bidPrice;
@@ -242,7 +242,7 @@ public class AbsMTreeAgent extends AgentImpl {
 			//Buy price.
 			//Single price.
 			
-			prices[auction] = minE + (((float)agent.getGameTime() / TOTAL_TIME)) * ( averageNeed) * 1.5f;
+			prices[auction] = minE + (((float)agent.getGameTime() / TOTAL_TIME)) * ( averageNeed) * 1.5f; //Rate can be changed.
 			float totalBenifit = 0;
 			for (int i = 0 ; i < 8; i++){
 				totalBenifit += entertainmentNeeds[i][type] - prices[auction];
