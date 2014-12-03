@@ -151,15 +151,23 @@ public class AbsMTreeAgent extends AgentImpl {
  
   //Flight
   private int[] ownFlight = new int[8];
-  
+  Price[] flightPrice = new Price[8];
   
   //Hotel
-  private class HotelInfo{
-	  private ArrayList<Float> flightPrirces = new ArrayList<Float>();
-	  private float tradePrices = -1;
-	  private int counter = 0;
+  Price[] hotelPrice = new Price[8];
+  private int[] ownHotel = new int[8];
+  private int[] closedHotel = new int[8];
+  private int[] lackHotel = new int[8];
+		  
+  private class Price{
+	  public ArrayList<PricesTime> prirces = new ArrayList<PricesTime>();
   }
-  HotelInfo[] hotelInfo = new HotelInfo[8];
+  
+  private class PricesTime{
+	  public float price = 0;
+	  public long time;
+  }
+  
   
   
   protected void init(ArgEnumerator args) {
@@ -173,12 +181,27 @@ public class AbsMTreeAgent extends AgentImpl {
     
     if (auctionCategory == TACAgent.CAT_FLIGHT) {
     	ownFlight[auctionCategory] = agent.getOwn(auction);
+    	PricesTime fpt = new PricesTime();
+    	fpt.time = agent.getGameTime();
+    	fpt.price = quote.getBidPrice();
+    	flightPrice[auction].prirces.add(fpt);
     }
     
     if (auctionCategory == TACAgent.CAT_HOTEL) {
-    	hotelInfo[auctionCategory - 8 ].flightPrirces.add(quote.getBidPrice());
-    	hotelInfo[auctionCategory - 8 ].counter++;
+    	if ( quote.isAuctionClosed()) {
+    		closedHotel[auction - 8] = 1;
+    	}
+    	int alloc = agent.getAllocation(auction);
+    	lackHotel[auction -8] = alloc;
+    	
+    	PricesTime fpt = new PricesTime();
+    	fpt.time = agent.getGameTime();
+    	fpt.price = quote.getBidPrice();
+    	hotelPrice[auction -8 ].prirces.add(fpt);
+    	ownHotel[auctionCategory - 8] = agent.getOwn(auctionCategory);
+    	
     	float a = agent.getGameTime() / TOTAL_TIME;
+        
     	
 //	      int alloc = agent.getAllocation(auction);
 //	      if (alloc > 0 && quote.hasHQW(agent.getBid(auction)) &&
@@ -231,6 +254,29 @@ public class AbsMTreeAgent extends AgentImpl {
 		agent.submitBid(bid);
       }
   }
+  
+  //Wait to complete.
+  public int calculateLamda(){
+	  int K = hotelPrice.length / 10;
+	  float m[][] =  new float[8][hotelPrice[0].prirces.size() + 3];
+	  for (int i = 0 ; i < 8; i++){
+		 // m[i][j] = 
+		  for (int j = 0; j < hotelPrice[i].prirces.size(); j++){
+			  m[i][j] = hotelPrice[0].prirces.get(j).price;
+		  }
+		  
+	  }
+	  int[] a = kmeans();
+	  int[][] b = new int[8][100];
+	  
+	  return 11;
+	  
+  }
+  
+  public int[] kmeans(){
+	  return new int[10];
+  }
+
 
   public void quoteUpdated(int auctionCategory) {
     log.fine("All quotes for "
