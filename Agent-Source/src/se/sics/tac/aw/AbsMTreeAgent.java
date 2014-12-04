@@ -221,10 +221,10 @@ public class AbsMTreeAgent extends AgentImpl {
         		 float askPrice = quote.getAskPrice();
         		      		 
         		 Bid bid = new Bid(auction);
-        		 if (askPrice < minFlightPrice[auction]){
+        		 if (askPrice < minFlightPrice[auction] && !(bided[auction])){
         			 bid.addBidPoint(alloc, askPrice);
             		 bided[auction] = true;
-            		 
+            		 agent.submitBid(bid);
         		 }
         		 
         		 else if ( askPrice <= lowLevel && !(bided[auction])){
@@ -234,7 +234,7 @@ public class AbsMTreeAgent extends AgentImpl {
             		 bided[auction] = true;
             		 agent.submitBid(bid);
         		 }
-        		 else if (askPrice <= (maxFlightPrice[auction] + minFlightPrice[auction]) / 2 && !(bided[auction]) ){ // If it is after Second_Flight_Time.
+        		 else if (askPrice <= highLevel && !(bided[auction]) ){ // If it is after Second_Flight_Time.
         			 bid.addBidPoint(alloc, askPrice);
         			 bided[auction] = true;
         			 agent.submitBid(bid);
@@ -280,13 +280,13 @@ public class AbsMTreeAgent extends AgentImpl {
         		bid.addBidPoint(alloc, prices[auction]);
         		
             	
-        		float benefit = 0;
-            	for (int i = 0 ; i < 8; i++){
-           			 benefit += hotelNeeds[i] - quote.getAskPrice();
-           		 }
-           		 if ( benefit >= 0 ){
+//        		float benefit = 0;
+//            	for (int i = 0 ; i < 8; i++){
+//           			 benefit += hotelNeeds[i] - quote.getAskPrice();
+//           		 }
+//           		 if ( benefit >= 0 ){
            			 agent.submitBid(bid);
-           		 }
+//           		 }
     			
         	}
         }
@@ -450,7 +450,12 @@ public class AbsMTreeAgent extends AgentImpl {
 	  totalNeeds[0] = sumE1;
 	  totalNeeds[1] = sumE2;
 	  totalNeeds[2] = sumE3;
-	 
+	  
+	  float b = 0;
+	  for (int i = 0 ; i < 8 ; i++){
+		  b += hotelNeeds[i];
+	  }
+	  float hotelAverage = b / 8;
 	
     for (int i = 0, n = agent.getAuctionNo(); i < n; i++) {
       int alloc = agent.getAllocation(i) - agent.getOwn(i);
@@ -463,8 +468,8 @@ public class AbsMTreeAgent extends AgentImpl {
 //		break;
       case TACAgent.CAT_HOTEL:
 			if (alloc > 0) {
-			  price = 50;
-			  prices[i] = 50f;
+			  price = hotelAverage;
+			  prices[i] = hotelAverage;
 			}
 			break;
       case TACAgent.CAT_ENTERTAINMENT:
