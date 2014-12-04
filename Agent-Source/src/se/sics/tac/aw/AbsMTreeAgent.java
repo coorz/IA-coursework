@@ -516,7 +516,7 @@ public class AbsMTreeAgent extends AgentImpl {
 	      hotelNeeds[i] = hotel;
 	      totalHotelNeeds += hotel;
 	  }
-	  float goodHotelDoor = totalHotelNeeds * (1f/4f);
+	  float goodHotelDoor = (totalHotelNeeds / 8 )* (1f/3f);
 	  
 	  
     for (int i = 0; i < 8; i++) {
