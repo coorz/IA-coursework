@@ -167,6 +167,7 @@ public class AbsMTreeAgent extends AgentImpl {
   private float[] hotelIncreaseRate = new float[8];
   private float[] lastHotelAskPrice = new float[8];
   private long lastSecondsOfEachMinute = 20 * 1000;
+  private int[] hotelNeeds = new int[8];
   
   private class Price{
 	  public ArrayList<PricesTime> prirces = new ArrayList<PricesTime>();
@@ -218,12 +219,12 @@ public class AbsMTreeAgent extends AgentImpl {
         		 float highLevel = (maxFlightPrice[auction] + minFlightPrice[auction]) * ( 2f / 3f) ; //Can change rate make it cheaper or not.
         		 float lowLevel = (maxFlightPrice[auction] + minFlightPrice[auction]) * ( 1f / 3f) ; //Can chage rate make it cheaper or not.
         		 float askPrice = quote.getAskPrice();
-        		 
+        		      		 
         		 Bid bid = new Bid(auction);
         		 if (askPrice < minFlightPrice[auction]){
         			 bid.addBidPoint(alloc, askPrice);
             		 bided[auction] = true;
-            		 agent.submitBid(bid);
+            		 
         		 }
         		 
         		 else if ( askPrice <= lowLevel && !(bided[auction])){
@@ -243,6 +244,7 @@ public class AbsMTreeAgent extends AgentImpl {
         			 //bided[auction] = true;
         			 //agent.submitBid(bid);
         		 }
+        		 
         		 
         		 
         	}
@@ -273,10 +275,18 @@ public class AbsMTreeAgent extends AgentImpl {
             	Bid bid = new Bid(auction);
             	
             		
-            		prices[auction] = hotelIncreaseRate[auction - 8] * quote.getAskPrice() + 30; // Plus a number can be changed for successfully bid.
-            		bid.addBidPoint(alloc, prices[auction]);
-            		agent.submitBid(bid);
-
+        		prices[auction] = hotelIncreaseRate[auction - 8] * quote.getAskPrice() + 30; // Plus a number can be changed for successfully bid.
+        		//prices[auction]
+        		bid.addBidPoint(alloc, prices[auction]);
+        		
+            	
+        		float benefit = 0;
+            	for (int i = 0 ; i < 8; i++){
+           			 benefit += hotelNeeds[i] - quote.getAskPrice();
+           		 }
+           		 if ( benefit >= 0 ){
+           			 agent.submitBid(bid);
+           		 }
     			
         	}
         }
@@ -500,10 +510,20 @@ public class AbsMTreeAgent extends AgentImpl {
   }
 
   private void calculateAllocation() {
+	  int totalHotelNeeds = 0;
+	  for (int i = 0; i < 8; i++) {
+	      int hotel = agent.getClientPreference(i, TACAgent.HOTEL_VALUE);
+	      hotelNeeds[i] = hotel;
+	      totalHotelNeeds += hotel;
+	  }
+	  float goodHotelDoor = totalHotelNeeds * (1f/4f);
+	  
+	  
     for (int i = 0; i < 8; i++) {
       int inFlight = agent.getClientPreference(i, TACAgent.ARRIVAL);
       int outFlight = agent.getClientPreference(i, TACAgent.DEPARTURE);
       int hotel = agent.getClientPreference(i, TACAgent.HOTEL_VALUE);
+      hotelNeeds[i] = hotel;
       int type;
 
       // Get the flight preferences auction and remember that we are
@@ -517,7 +537,7 @@ public class AbsMTreeAgent extends AgentImpl {
 
       // if the hotel value is greater than 70 we will select the
       // expensive hotel (type = 1)
-      if (hotel > 70) {
+      if (hotel >= goodHotelDoor) {
 	type = TACAgent.TYPE_GOOD_HOTEL;
       } else {
 	type = TACAgent.TYPE_CHEAP_HOTEL;
