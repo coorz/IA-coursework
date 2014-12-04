@@ -158,6 +158,9 @@ public class AbsMTreeAgent extends AgentImpl {
   private static final long Second_Flight_Time = 6 * 60 * 1000;
   private static final long Last_Flight_Time = 8 * 60 * 1000;
   
+  private float maxFlightPriceInALl = Integer.MIN_VALUE;
+  private float minFlightPriceInALl = Integer.MAX_VALUE;
+  
   
   //Hotel
  
@@ -192,6 +195,14 @@ public class AbsMTreeAgent extends AgentImpl {
         	p.price = quote.getAskPrice();
         	p.time = agent.getGameTime();
         	flightPrice[auction].prirces.add(p);
+        	if (maxFlightPriceInALl < quote.getAskPrice()){
+        		maxFlightPriceInALl = quote.getAskPrice();
+        	}
+        	
+        	if (minFlightPriceInALl > quote.getAskPrice()){
+        		minFlightPriceInALl = quote.getAskPrice();
+        	}
+        	
         	if ( maxFlightPrice[auction] < quote.getAskPrice()){
         		maxFlightPrice[auction] = quote.getAskPrice();
         	}
@@ -200,17 +211,19 @@ public class AbsMTreeAgent extends AgentImpl {
         		minFlightPrice[auction] = quote.getAskPrice();
         	}
         	
+        	
         	//If after Begin_Flight_Time.
         	if ( agent.getGameTime() >= Begin_Flight_Time ){
         		 
-        		 float highLevel = (maxFlightPrice[auction] + minFlightPrice[auction]) * ( 2f / 3f) ;
-        		 float lowLevel = (maxFlightPrice[auction] + minFlightPrice[auction]) * ( 1f / 3f) ;;
+        		 float highLevel = (maxFlightPrice[auction] + minFlightPrice[auction]) * ( 2f / 3f) ; //Can change rate make it cheaper or not.
+        		 float lowLevel = (maxFlightPrice[auction] + minFlightPrice[auction]) * ( 1f / 3f) ; //Can chage rate make it cheaper or not.
         		 float askPrice = quote.getAskPrice();
         		 
         		 Bid bid = new Bid(auction);
         		 if (askPrice < minFlightPrice[auction]){
         			 bid.addBidPoint(alloc, askPrice);
             		 bided[auction] = true;
+            		 agent.submitBid(bid);
         		 }
         		 
         		 else if ( askPrice <= lowLevel && !(bided[auction])){
@@ -218,16 +231,19 @@ public class AbsMTreeAgent extends AgentImpl {
             		 
             		 bid.addBidPoint(alloc, askPrice);
             		 bided[auction] = true;
+            		 agent.submitBid(bid);
         		 }
-        		 else if (askPrice <= highLevel && !(bided[auction]) ){ // If it is after Second_Flight_Time.
+        		 else if (askPrice <= (maxFlightPrice[auction] + minFlightPrice[auction]) / 2 && !(bided[auction]) ){ // If it is after Second_Flight_Time.
         			 bid.addBidPoint(alloc, askPrice);
         			 bided[auction] = true;
+        			 agent.submitBid(bid);
         		 }
         		 else if ( agent.getGameTime() >= Last_Flight_Time && !(bided[auction])){    //If it is the last minutes.
-        			 bid.addBidPoint(alloc, askPrice);
-        			 bided[auction] = true;
+        			 //bid.addBidPoint(alloc, askPrice);
+        			 //bided[auction] = true;
+        			 //agent.submitBid(bid);
         		 }
-        		 agent.submitBid(bid);
+        		 
         		 
         	}
     	}
@@ -257,7 +273,7 @@ public class AbsMTreeAgent extends AgentImpl {
             	Bid bid = new Bid(auction);
             	
             		
-            		prices[auction] = hotelIncreaseRate[auction - 8] * quote.getAskPrice() + 10;
+            		prices[auction] = hotelIncreaseRate[auction - 8] * quote.getAskPrice() + 30; // Plus a number can be changed for successfully bid.
             		bid.addBidPoint(alloc, prices[auction]);
             		agent.submitBid(bid);
 
