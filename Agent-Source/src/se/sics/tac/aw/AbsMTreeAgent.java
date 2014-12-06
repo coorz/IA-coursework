@@ -227,57 +227,67 @@ public class AbsMTreeAgent extends AgentImpl {
     	}
     	
     	boolean canBuy = true;
-    	int maxFlightBuy = Integer.MAX_VALUE;
+    	
     	for ( int i = 0 ; i < 8 ; i ++){
-    		maxFlightBuy = Integer.MAX_VALUE;
+    		
     		canBuy = true;
     		int in = packages[i][0] - 1 ;
     		int out = packages[i][1] - 1;
     		//int dayStay = in - out;
     		for ( int j = in; j < out ; j++){
-    			if (ownedHotelDay[j] == 0){
+    			if (ownedHotelDay[j] <= 0){
     				canBuy = false;
     			}
-    			if (maxFlightBuy > ownedHotelDay[j] && ownedHotelDay[j] != 0){
-    				maxFlightBuy = ownedHotelDay[j];
-    			}
-    			
     		}
+    		
+    		
     		if ( canBuy){
+    			for ( int j = in; j < out ; j++){
+    				ownedHotelDay[j]--;
+    				}
     			if (canBuyInFlight.containsKey(in)){
-    				canBuyInFlight.put(in, canBuyInFlight.get(in) > maxFlightBuy? maxFlightBuy: canBuyInFlight.get(in));
+    				canBuyInFlight.put(in, canBuyInFlight.get(in) + 1);
     			}else{
-    				canBuyInFlight.put(in, maxFlightBuy);
+    				canBuyInFlight.put(in, 1);
     			}
     			if (canBuyOutFlight.containsKey(out)){
-    				canBuyOutFlight.put(out, canBuyOutFlight.get(out) > maxFlightBuy? maxFlightBuy: canBuyOutFlight.get(out));
+    				canBuyOutFlight.put(out, canBuyOutFlight.get(out) + 1);
     			}else{
-    				canBuyOutFlight.put(out, maxFlightBuy);
+    				canBuyOutFlight.put(out, 1);
     			}
     			
     			
     		}
     	}
     
-         
+    	int maxFlightBuy = 0;
     	if (auction <=3 ){
-    		maxFlightBuy = canBuyInFlight.get(auction);
+    		if (!canBuyInFlight.containsKey(auction)){
+    			canBuy = false;
+    		}
+    		else {
+    			maxFlightBuy = canBuyInFlight.get(auction);
+    			canBuy = true;
+    		}
     	}
     	else{
     		int x = auction -3;
-    		maxFlightBuy = canBuyOutFlight.get(x);
+    		if (!canBuyOutFlight.containsKey(x)){
+    			canBuy = false;
+    		}
+    		else{
+    			maxFlightBuy = canBuyOutFlight.get(x);
+    			canBuy = true;
+    		}
     	}
-    	
+    
 		 
-		 int alloc = agent.getAllocation(auction) ;
- 		if ( alloc > maxFlightBuy){
- 			alloc = maxFlightBuy;
- 		}
- 		alloc = alloc - agent.getOwn(auction);
-		
-		 
-		 
-    	if ( alloc > 0){
+    	if (canBuy){
+    		 int alloc = agent.getAllocation(auction) ;
+    	 		if ( alloc > maxFlightBuy){
+    	 			alloc = maxFlightBuy;
+    	 		}
+    	 		alloc = alloc - agent.getOwn(auction);
     		
     		 if ( alloc > 0){
     			
