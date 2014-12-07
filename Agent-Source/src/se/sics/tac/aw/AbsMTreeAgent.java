@@ -582,6 +582,7 @@ public class AbsMTreeAgent extends AgentImpl {
       case TACAgent.CAT_HOTEL:
 			if (alloc > 0) {
 			  price = 200;
+			  
 			  prices[i] = 200;
 			}
 			break;
