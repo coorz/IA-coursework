@@ -211,19 +211,12 @@ public class AbsMTreeAgent extends AgentImpl {
     	}
     	
     	
-    	int[] ownedHotelDay = new int[4];
+    	int[] ownedHotelDay = new int[8];
     	
     	HashMap<Integer, Integer> canBuyInFlight = new HashMap<Integer, Integer>();
     	HashMap<Integer, Integer> canBuyOutFlight = new HashMap<Integer, Integer>();
     	for ( int i =0; i < 8; i++){
-    		if ( i <= 3 ){
-    			ownedHotelDay[i] += agent.getOwn(i + 8);
-    			
-    		}
-    		else{
-    			int x = i - 4;
-    			ownedHotelDay[i - 4] += agent.getOwn(x + 12);
-    		}
+    		ownedHotelDay[i] += agent.getOwn(i + 8);
     	}
     	
     	boolean canBuy = true;
@@ -234,15 +227,15 @@ public class AbsMTreeAgent extends AgentImpl {
     		int in = packages[i][0] - 1 ;
     		int out = packages[i][1] - 1;
     		//int dayStay = in - out;
-    		for ( int j = in; j < out ; j++){
+    		//Good hotel.
+    		
+    		for ( int j = in + 4; j < out + 4; j++){
     			if (ownedHotelDay[j] <= 0){
     				canBuy = false;
     			}
     		}
-    		
-    		
-    		if ( canBuy){
-    			for ( int j = in; j < out ; j++){
+			if ( canBuy){
+    			for ( int j = in + 4; j < out + 4 ; j++){
     				ownedHotelDay[j]--;
     				}
     			if (canBuyInFlight.containsKey(in)){
@@ -256,8 +249,42 @@ public class AbsMTreeAgent extends AgentImpl {
     				canBuyOutFlight.put(out, 1);
     			}
     			
-    			
+    			continue;
     		}
+    		
+			
+    		
+    		//Cheap hotel.
+    		if ( !canBuy){
+    			canBuy = true;
+    			for ( int j = in; j < out ; j++){
+        			if (ownedHotelDay[j] <= 0){
+        				canBuy = false;
+        			}
+        		}
+        		
+        		if ( canBuy){
+        			for ( int j = in; j < out ; j++){
+        				ownedHotelDay[j]--;
+        				}
+        			if (canBuyInFlight.containsKey(in)){
+        				canBuyInFlight.put(in, canBuyInFlight.get(in) + 1);
+        			}else{
+        				canBuyInFlight.put(in, 1);
+        			}
+        			if (canBuyOutFlight.containsKey(out)){
+        				canBuyOutFlight.put(out, canBuyOutFlight.get(out) + 1);
+        			}else{
+        				canBuyOutFlight.put(out, 1);
+        			}
+        			
+        			
+        		}
+    		}
+    		
+    		
+    		
+    		
     	}
     
     	int maxFlightBuy = 0;
@@ -289,14 +316,14 @@ public class AbsMTreeAgent extends AgentImpl {
     	 		}
     	 		alloc = alloc - agent.getOwn(auction);
     		
-    		 if ( alloc > 0){
+    		 if ( alloc > 0 && maxFlightBuy > 0){
     			
     			 float averageLevel = (maxFlightPrice + minFlightPrice) / 2;
         		 float highLevel = (maxFlightPrice + minFlightPrice) * ( 2f / 3f) ; //Can change rate make it cheaper or not.
         		 float lowLevel = (maxFlightPrice + minFlightPrice ) * ( 1f / 3f) ; //Can chage rate make it cheaper or not.
         		 float askPrice = quote.getAskPrice();
     			 Bid bid = new Bid(auction);
-        		 if (askPrice < minFlightPrice ){
+        		 if (askPrice < minFlightPrice || askPrice < lowLevel){
         			 bid.addBidPoint(alloc, askPrice);
             		 
             		 agent.submitBid(bid);
@@ -635,7 +662,7 @@ public class AbsMTreeAgent extends AgentImpl {
       } else {
 	type = TACAgent.TYPE_CHEAP_HOTEL;
       }
-      type = TACAgent.TYPE_GOOD_HOTEL;
+      //type = TACAgent.TYPE_GOOD_HOTEL;
       // allocate a hotel night for each day that the agent stays
       for (int d = inFlight; d < outFlight; d++) {
 	auction = agent.getAuctionFor(TACAgent.CAT_HOTEL, type, d);
