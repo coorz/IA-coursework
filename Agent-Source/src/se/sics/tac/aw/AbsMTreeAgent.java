@@ -397,6 +397,34 @@ public class AbsMTreeAgent extends AgentImpl {
     			
         	}
         }
+        else{
+        	if (auction>= 8 && auction <= 11){
+        		int newAuction = auction + 4;
+        		int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
+        		if ( alloc > 0){
+        			Quote q = agent.getQuote(newAuction);
+            		if ( !q.isAuctionClosed()){
+            			agent.setAllocation(newAuction, alloc + agent.getAllocation(newAuction));
+            			Bid bid = new Bid(newAuction);
+                		bid.addBidPoint(alloc, 300f);
+                		agent.submitBid(bid);
+            		}
+        		}
+        	}
+        	else{
+        		int newAuction = auction - 4;
+        		int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
+        		if ( alloc > 0){
+        			Quote q = agent.getQuote(newAuction);
+            		if ( !q.isAuctionClosed()){
+            			agent.setAllocation(newAuction, alloc + agent.getAllocation(newAuction));
+            			Bid bid = new Bid(newAuction);
+            			bid.addBidPoint(alloc, 300f);
+            			agent.submitBid(bid);
+            		}
+        		}
+        	}
+        }
     	
 
     } else if (auctionCategory == TACAgent.CAT_ENTERTAINMENT) { //Only sell.
@@ -632,7 +660,7 @@ public class AbsMTreeAgent extends AgentImpl {
 	      int hotel = agent.getClientPreference(i, TACAgent.HOTEL_VALUE);
 	      totalHotelNeeds += hotel;
 	  }
-	  float goodHotelDoor = (totalHotelNeeds / 8 );
+	  float goodHotelDoor = (totalHotelNeeds / 8 ) * (1f/3f);
 	  
 	  
     for (int i = 0; i < 8; i++) {
