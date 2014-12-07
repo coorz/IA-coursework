@@ -162,7 +162,7 @@ public class AbsMTreeAgent extends AgentImpl {
   private float minFlightPrice = Integer.MAX_VALUE;
 
   private static final long Begin_Flight_Time = 2 * 60 * 1000;
-  private static final long Second_Flight_Time = 6 * 60 * 1000;
+  private static final long Second_Flight_Time = 7 * 60 * 1000;
   private static final long Last_Flight_Time = 8 * 60 * 1000;
   
 
