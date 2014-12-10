@@ -700,7 +700,7 @@ public class AbsMTreeAgent extends AgentImpl {
       } else {
     	  type = TACAgent.TYPE_CHEAP_HOTEL;
       }
-      type = TACAgent.TYPE_GOOD_HOTEL;
+      //type = TACAgent.TYPE_GOOD_HOTEL;
       // allocate a hotel night for each day that the agent stays
       for (int d = inFlight; d < outFlight; d++) {
 	auction = agent.getAuctionFor(TACAgent.CAT_HOTEL, type, d);
