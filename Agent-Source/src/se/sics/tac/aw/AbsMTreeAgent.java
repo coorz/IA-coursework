@@ -360,11 +360,11 @@ public class AbsMTreeAgent extends AgentImpl {
             	
             	Bid bid = new Bid(auction);
             	
-            	prices[auction] = 200 + (askPrice / 700f) * 1000 + 50; // Plus a number can be changed for successfully bid.
+            	prices[auction] = 200 + (askPrice /( 700f * 2 )) * 1000 + 50; // Plus a number can be changed for successfully bid.
             	
         	
-           		 if ( prices[auction]  >=  700   ){
-           			prices[auction]  = 700 ;
+           		 if ( prices[auction]  >=  400   ){
+           			prices[auction]  = 400 ;
            			bid.addBidPoint(alloc, prices[auction]);
            			 agent.submitBid(bid);
            		 }
@@ -700,7 +700,7 @@ public class AbsMTreeAgent extends AgentImpl {
       } else {
     	  type = TACAgent.TYPE_CHEAP_HOTEL;
       }
-      type = TACAgent.TYPE_GOOD_HOTEL;
+      //type = TACAgent.TYPE_GOOD_HOTEL;
       // allocate a hotel night for each day that the agent stays
       for (int d = inFlight; d < outFlight; d++) {
 	auction = agent.getAuctionFor(TACAgent.CAT_HOTEL, type, d);
