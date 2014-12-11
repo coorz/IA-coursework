@@ -353,6 +353,7 @@ public class AbsMTreeAgent extends AgentImpl {
         	
         	int alloc = agent.getAllocation(auction);
         	float askPrice = quote.getAskPrice();
+        	float bidPrice = quote.getBidPrice();
         	if (alloc > 0 && askPrice > 0) {
         		
         		
@@ -360,11 +361,14 @@ public class AbsMTreeAgent extends AgentImpl {
             	
             	Bid bid = new Bid(auction);
             	
-            	prices[auction] = 200 + (askPrice /( 700f * 2 )) * 1000 + 50; // Plus a number can be changed for successfully bid.
+            	if (bidPrice > 0)
+            		prices[auction] = 70 + (bidPrice / askPrice ) * 100f   + askPrice; // Plus a number can be changed for successfully bid.
+            	else
+            		prices[auction] = 70 + askPrice;
             	
         	
-           		 if ( prices[auction]  >=  400   ){
-           			prices[auction]  = 400 ;
+           		 if ( prices[auction]  >=  500   ){
+           			prices[auction]  = 500 ;
            			bid.addBidPoint(alloc, prices[auction]);
            			 agent.submitBid(bid);
            		 }
@@ -447,18 +451,18 @@ public class AbsMTreeAgent extends AgentImpl {
 	  	  
 	  	    
 	  	
-            if ( agent.getGameTime() >= Last_Flight_Time + 30 * 1000)	{
-            	prices[auction] = 20;
-            	if ( prices[auction] < 0 )
-            		prices[auction] = 20;
-            }
+//            if ( agent.getGameTime() >= Last_Flight_Time + 30 * 1000)	{
+//            	prices[auction] = 20;
+//            	if ( prices[auction] < 0 )
+//            		prices[auction] = 20;
+//            }
 	  		
-            else {
+           // else {
             	prices[auction] = maxE - (((float)agent.getGameTime() / (TOTAL_TIME - Last_Flight_Time))) * ( maxE ) ; //Rate can be changed.
     			if ( prices[auction] < maxE * (1f/2f) ){
     				prices[auction] = maxE * (1f/2f);
     			}
-            }
+            //}
 			
 			// prices[auction] = prices[auction] * Math.abs(alloc);
 	  		bid.addBidPoint( alloc - own, prices[auction]);
@@ -618,9 +622,9 @@ public class AbsMTreeAgent extends AgentImpl {
 //		break;
       case TACAgent.CAT_HOTEL:
 			if (alloc > 0) {
-			  price = 200;
+			  price = 100;
 			  
-			  prices[i] = 200;
+			  prices[i] = 100;
 			}
 			break;
 //      case TACAgent.CAT_ENTERTAINMENT:
@@ -669,7 +673,7 @@ public class AbsMTreeAgent extends AgentImpl {
 	      int hotel = agent.getClientPreference(i, TACAgent.HOTEL_VALUE);
 	      totalHotelNeeds += hotel;
 	  }
-	  float goodHotelDoor = (totalHotelNeeds / 8 ) * (2f/3f);
+	  float goodHotelDoor = (totalHotelNeeds / 8 ) ;
 	  
 	  
     for (int i = 0; i < 8; i++) {
@@ -695,7 +699,7 @@ public class AbsMTreeAgent extends AgentImpl {
 
       // if the hotel value is greater than 70 we will select the
       // expensive hotel (type = 1)
-      if (hotel >= goodHotelDoor) {
+      if (hotel >= goodHotelDoor ) {
     	  type = TACAgent.TYPE_GOOD_HOTEL;
       } else {
     	  type = TACAgent.TYPE_CHEAP_HOTEL;
