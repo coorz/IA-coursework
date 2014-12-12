@@ -374,7 +374,7 @@ public class AbsMTreeAgent extends AgentImpl {
     				 agent.submitBid(bid);
     				 
     			 }
-    			 else if ( agent.getGameTime() <= FLIGHT_TIME7 && askPrice <= level3){
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME7 && askPrice <= level2){
     				 bid.addBidPoint(alloc, askPrice);
     				 agent.submitBid(bid);
     				 
@@ -550,18 +550,18 @@ public class AbsMTreeAgent extends AgentImpl {
      
         }
        
-        if (alloc > 0){
-        	int type = calculateEType(auction);
-        	int maxE = entertainmentNeedsMax[type][0];
-	  	    int minE = entertainmentNeedsMax[type][1];
-	  	    int average = (maxE + minE) / 2;
-        	prices[auction] = minE + (((float)agent.getGameTime() / (TOTAL_TIME))) * ( average ) ; //Rate can be changed.
-        	if (prices[auction] > average){
-        		prices[auction] = average;
-        	}
-        	bid.addBidPoint( alloc , prices[auction]);
-        	agent.submitBid(bid);
-        }
+//        if (alloc > 0){
+//        	int type = calculateEType(auction);
+//        	int maxE = entertainmentNeedsMax[type][0];
+//	  	    int minE = entertainmentNeedsMax[type][1];
+//	  	    int average = (maxE + minE) / 2;
+//        	prices[auction] = minE + (((float)agent.getGameTime() / (TOTAL_TIME))) * ( maxE ) ; //Rate can be changed.
+//        	if (prices[auction] > average){
+//        		prices[auction] = average;
+//        	}
+//        	bid.addBidPoint( alloc , prices[auction]);
+//        	agent.submitBid(bid);
+//        }
     }
   }
  
@@ -795,7 +795,7 @@ public class AbsMTreeAgent extends AgentImpl {
       } else {
     	  type = TACAgent.TYPE_CHEAP_HOTEL;
       }
-      //type = TACAgent.TYPE_GOOD_HOTEL;
+      //type = TACAgent.TYPE_CHEAP_HOTEL;
       packages[i][6] = type;
       // allocate a hotel night for each day that the agent stays
       for (int d = inFlight; d < outFlight; d++) {
