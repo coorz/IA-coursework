@@ -143,12 +143,12 @@ public class AbsMTreeAgent extends AgentImpl {
   
   //Packages
   
-  private static int[][] packages = new int[8][6];
+  private static int[][] packages = new int[8][7];
   
   
   //Record all entertianmentNeeds.
   
-  private static int[][] entertainmentNeedsMax = new int[3][1];
+  private static int[][] entertainmentNeedsMax = new int[3][2];
   private static float[] totalNeeds = new float[3];
 
   //Total times for this game.
@@ -161,7 +161,8 @@ public class AbsMTreeAgent extends AgentImpl {
   private float maxFlightPrice = Integer.MIN_VALUE;
   private float minFlightPrice = Integer.MAX_VALUE;
 
-  private static final long Second_Flight_Time = 6 * 60 * 1000;
+  private static final long First_Flight_Time = 2 * 60 * 1000;
+  private static final long Second_Flight_Time = 4 * 60 * 1000;
   private static final long Last_Flight_Time = 8 * 60 * 1000;
   
 
@@ -218,39 +219,44 @@ public class AbsMTreeAgent extends AgentImpl {
     	
     	for ( int i = 0 ; i < 8 ; i ++){
     		
-    		canBuy = true;
+    		
     		int in = packages[i][0] - 1 ;
     		int out = packages[i][1] - 1;
+    		int hotelType = packages[i][6];
     		//int dayStay = in - out;
-    		//Good hotel.
     		
-    		for ( int j = in + 4; j < out + 4; j++){
-    			if (ownedHotelDay[j] <= 0){
-    				canBuy = false;
-    			}
+    		
+    		if ( hotelType == TACAgent.TYPE_GOOD_HOTEL){
+    			//Good hotel.
+    			canBuy = true;
+    			for ( int j = in + 4; j < out + 4; j++){
+        			if (ownedHotelDay[j] <= 0){
+        				canBuy = false;
+        			}
+        		}
+    			if ( canBuy){
+        			for ( int j = in + 4; j < out + 4 ; j++){
+        				ownedHotelDay[j]--;
+        				}
+        			if (canBuyInFlight.containsKey(in)){
+        				canBuyInFlight.put(in, canBuyInFlight.get(in) + 1);
+        			}else{
+        				canBuyInFlight.put(in, 1);
+        			}
+        			if (canBuyOutFlight.containsKey(out)){
+        				canBuyOutFlight.put(out, canBuyOutFlight.get(out) + 1);
+        			}else{
+        				canBuyOutFlight.put(out, 1);
+        			}
+        			
+        			continue;
+        		}
     		}
-			if ( canBuy){
-    			for ( int j = in + 4; j < out + 4 ; j++){
-    				ownedHotelDay[j]--;
-    				}
-    			if (canBuyInFlight.containsKey(in)){
-    				canBuyInFlight.put(in, canBuyInFlight.get(in) + 1);
-    			}else{
-    				canBuyInFlight.put(in, 1);
-    			}
-    			if (canBuyOutFlight.containsKey(out)){
-    				canBuyOutFlight.put(out, canBuyOutFlight.get(out) + 1);
-    			}else{
-    				canBuyOutFlight.put(out, 1);
-    			}
-    			
-    			continue;
-    		}
     		
-			
     		
-    		//Cheap hotel.
-    		if ( !canBuy){
+    		else{
+    			//Cheap hotel.
+        		
     			canBuy = true;
     			for ( int j = in; j < out ; j++){
         			if (ownedHotelDay[j] <= 0){
@@ -275,11 +281,9 @@ public class AbsMTreeAgent extends AgentImpl {
         			
         			
         		}
+        		
     		}
-    		
-    		
-    		
-    		
+
     	}
     
     	int maxFlightBuy = 0;
@@ -323,12 +327,12 @@ public class AbsMTreeAgent extends AgentImpl {
             		 
             		 agent.submitBid(bid);
         		 }
-        		 else if ( askPrice <= averageLevel){                		 
-            		 bid.addBidPoint(alloc, askPrice);
-            		
-            		 agent.submitBid(bid);
-        		 }
-        		 else if ( askPrice <= highLevel  && agent.getGameTime() >= Second_Flight_Time){                		 
+//        		 else if ( askPrice <= averageLevel && agent.getGameTime() >= First_Flight_Time){                		 
+//            		 bid.addBidPoint(alloc, askPrice);
+//            		
+//            		 agent.submitBid(bid);
+//        		 }
+        		 else if ( askPrice <= averageLevel  && agent.getGameTime() >= Second_Flight_Time){                		 
             		 bid.addBidPoint(alloc, askPrice);
             		
             		 agent.submitBid(bid);
@@ -442,9 +446,9 @@ public class AbsMTreeAgent extends AgentImpl {
     	
     	
     	int own = agent.getOwn(auction);
-    	int alloc = agent.getAllocation(auction);
+    	int alloc = agent.getAllocation(auction) - agent.getOwn(auction);
         Bid bid = new Bid(auction);
-        if (own > 0 && own > alloc) {
+        if (alloc < 0) {
 	      	int type = calculateEType(auction);
 	      	
 	  	    int maxE = entertainmentNeedsMax[type][0];
@@ -465,7 +469,7 @@ public class AbsMTreeAgent extends AgentImpl {
             //}
 			
 			// prices[auction] = prices[auction] * Math.abs(alloc);
-	  		bid.addBidPoint( alloc - own, prices[auction]);
+	  		bid.addBidPoint( alloc, prices[auction]);
 	  		if (DEBUG) {
 	  		  log.finest("submitting bid with alloc="
 	  			     + agent.getAllocation(auction)
@@ -475,6 +479,19 @@ public class AbsMTreeAgent extends AgentImpl {
 	  		agent.submitBid(bid);
    
      
+        }
+       
+        if (alloc > 0){
+        	int type = calculateEType(auction);
+        	int maxE = entertainmentNeedsMax[type][0];
+	  	    int minE = entertainmentNeedsMax[type][1];
+	  	    int average = (maxE + minE) / 2;
+        	prices[auction] = minE + (((float)agent.getGameTime() / (TOTAL_TIME - Last_Flight_Time))) * ( average ) ; //Rate can be changed.
+        	if (prices[auction] > average){
+        		prices[auction] = average;
+        	}
+        	bid.addBidPoint( alloc , prices[auction]);
+        	agent.submitBid(bid);
         }
     }
   }
@@ -579,11 +596,15 @@ public class AbsMTreeAgent extends AgentImpl {
 	  for (int i = 0; i < 3; i++){
 		 
 		  int maxE = Integer.MIN_VALUE;
-		  
+		  int minE = Integer.MAX_VALUE;
 		  
 		  for ( int j = 0; j < packages.length ; j++){
 			  if ( maxE < packages[j][i + 3]){
 				  maxE = packages[j][i + 3];
+			  }
+			  
+			  if (minE > packages[j][i + 3]){
+				  minE = packages[j][i + 3];
 			  }
 			  
 			  if ( i == 0){
@@ -601,6 +622,7 @@ public class AbsMTreeAgent extends AgentImpl {
 		  }
 		  
 		  entertainmentNeedsMax[i][0] = maxE;
+		  entertainmentNeedsMax[i][1] = minE;
 		 
 	  }
 	 
@@ -622,9 +644,9 @@ public class AbsMTreeAgent extends AgentImpl {
 //		break;
       case TACAgent.CAT_HOTEL:
 			if (alloc > 0) {
-			  price = 100;
+			  price = 300;
 			  
-			  prices[i] = 100;
+			  prices[i] = 300;
 			}
 			break;
 //      case TACAgent.CAT_ENTERTAINMENT:
@@ -673,7 +695,7 @@ public class AbsMTreeAgent extends AgentImpl {
 	      int hotel = agent.getClientPreference(i, TACAgent.HOTEL_VALUE);
 	      totalHotelNeeds += hotel;
 	  }
-	  float goodHotelDoor = (totalHotelNeeds / 8 ) ;
+	  float goodHotelDoor = (totalHotelNeeds / 8 );
 	  
 	  
     for (int i = 0; i < 8; i++) {
@@ -705,6 +727,7 @@ public class AbsMTreeAgent extends AgentImpl {
     	  type = TACAgent.TYPE_CHEAP_HOTEL;
       }
       //type = TACAgent.TYPE_GOOD_HOTEL;
+      packages[i][6] = type;
       // allocate a hotel night for each day that the agent stays
       for (int d = inFlight; d < outFlight; d++) {
 	auction = agent.getAuctionFor(TACAgent.CAT_HOTEL, type, d);
