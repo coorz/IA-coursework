@@ -161,10 +161,18 @@ public class AbsMTreeAgent extends AgentImpl {
   private float maxFlightPrice = Integer.MIN_VALUE;
   private float minFlightPrice = Integer.MAX_VALUE;
 
-  private static final long First_Flight_Time = 2 * 60 * 1000;
+//  private static final long First_Flight_Time = 2 * 60 * 1000;
   private static final long Second_Flight_Time = 4 * 60 * 1000;
   private static final long Last_Flight_Time = 8 * 60 * 1000;
   
+  private static final long FLIGHT_TIME1 = 1 * 60 *1000;
+  private static final long FLIGHT_TIME2 = 2 * 60 *1000;
+  private static final long FLIGHT_TIME3 = 3 * 60 *1000;
+  private static final long FLIGHT_TIME4 = 4 * 60 *1000;
+  private static final long FLIGHT_TIME5 = 5 * 60 *1000;
+  private static final long FLIGHT_TIME6 = 6 * 60 *1000;
+  private static final long FLIGHT_TIME7 = 7 * 60 *1000;
+  private static final long FLIGHT_TIME8 = 8 * 60 *1000;
 
   
   //Hotel
@@ -317,31 +325,92 @@ public class AbsMTreeAgent extends AgentImpl {
     		
     		 if ( alloc > 0 && maxFlightBuy > 0){
     			
-    			 float averageLevel = (maxFlightPrice + minFlightPrice) / 2;
-        		 float highLevel = (maxFlightPrice + minFlightPrice) * ( 2f / 3f) ; //Can change rate make it cheaper or not.
-        		 float lowLevel = (maxFlightPrice + minFlightPrice ) * ( 1f / 3f) ; //Can chage rate make it cheaper or not.
+//    			 float averageLevel = (maxFlightPrice + minFlightPrice) / 2;
+//        		 float highLevel = (maxFlightPrice + minFlightPrice) * ( 2f / 3f) ; //Can change rate make it cheaper or not.
+//        		 float lowLevel = (maxFlightPrice + minFlightPrice ) * ( 1f / 3f) ; //Can chage rate make it cheaper or not.
         		 float askPrice = quote.getAskPrice();
+    			 
+//    			 float level1 = (maxFlightPrice ) * (9f/10f);
+    			 float level2 = (maxFlightPrice ) * (8f/10f);
+    			 float level3 = (maxFlightPrice ) * (7f/10f);
+    			 float level4 = (maxFlightPrice ) * (6f/10f);
+//    			 float level5 = (maxFlightPrice ) * (5f/10f);
+//    			 float level6 = (maxFlightPrice ) * (4f/10f);
+//    			 float level7 = (maxFlightPrice ) * (3f/10f);
+//    			 float level8 = (maxFlightPrice ) * (2f/10f);
+    			 
+    			 
     			 Bid bid = new Bid(auction);
-        		 if (askPrice < minFlightPrice || askPrice < lowLevel){
-        			 bid.addBidPoint(alloc, askPrice);
-            		 
-            		 agent.submitBid(bid);
-        		 }
-//        		 else if ( askPrice <= averageLevel && agent.getGameTime() >= First_Flight_Time){                		 
+    			 
+    			 if ( agent.getGameTime() <= FLIGHT_TIME1 && askPrice <= level4){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME2 && askPrice <= level4){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME3 && askPrice <= level4){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME4 && askPrice <= level3){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME5 && askPrice <= level3){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME6 && askPrice <= level3){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME7 && askPrice <= level3){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 else if ( agent.getGameTime() <= FLIGHT_TIME8 && askPrice <= level2){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    				 
+    			 }
+    			 else if ( agent.getGameTime() >= Last_Flight_Time){
+    				 bid.addBidPoint(alloc, askPrice);
+    				 agent.submitBid(bid);
+    			 }
+    			 
+    			 
+    			 
+//        		 if (askPrice < minFlightPrice || askPrice < lowLevel){
+//        			 bid.addBidPoint(alloc, askPrice);
+//            		 
+//            		 agent.submitBid(bid);
+//        		 }
+////        		 else if ( askPrice <= averageLevel && agent.getGameTime() >= First_Flight_Time){                		 
+////            		 bid.addBidPoint(alloc, askPrice);
+////            		
+////            		 agent.submitBid(bid);
+////        		 }
+//        		 else if ( askPrice <= averageLevel  && agent.getGameTime() >= Second_Flight_Time){                		 
 //            		 bid.addBidPoint(alloc, askPrice);
 //            		
 //            		 agent.submitBid(bid);
 //        		 }
-        		 else if ( askPrice <= averageLevel  && agent.getGameTime() >= Second_Flight_Time){                		 
-            		 bid.addBidPoint(alloc, askPrice);
-            		
-            		 agent.submitBid(bid);
-        		 }
-        		 else if (agent.getGameTime() >= Last_Flight_Time ){    //If it is the last minutes.
-        			 bid.addBidPoint(alloc, askPrice);
-        			
-        			 agent.submitBid(bid);
-        		 }
+//        		 else if (agent.getGameTime() >= Last_Flight_Time ){    //If it is the last minutes.
+//        			 bid.addBidPoint(alloc, askPrice);
+//        			
+//        			 agent.submitBid(bid);
+//        		 }
     		
     		 }	 
     		 
@@ -463,8 +532,8 @@ public class AbsMTreeAgent extends AgentImpl {
 	  		
            // else {
             	prices[auction] = maxE - (((float)agent.getGameTime() / (TOTAL_TIME - Last_Flight_Time))) * ( maxE ) ; //Rate can be changed.
-    			if ( prices[auction] < maxE * (1f/2f) ){
-    				prices[auction] = maxE * (1f/2f);
+    			if ( prices[auction] < maxE * (2f/3f) ){
+    				prices[auction] = maxE * (2f/3f);
     			}
             //}
 			
@@ -486,7 +555,7 @@ public class AbsMTreeAgent extends AgentImpl {
         	int maxE = entertainmentNeedsMax[type][0];
 	  	    int minE = entertainmentNeedsMax[type][1];
 	  	    int average = (maxE + minE) / 2;
-        	prices[auction] = minE + (((float)agent.getGameTime() / (TOTAL_TIME - Last_Flight_Time))) * ( average ) ; //Rate can be changed.
+        	prices[auction] = minE + (((float)agent.getGameTime() / (TOTAL_TIME))) * ( average ) ; //Rate can be changed.
         	if (prices[auction] > average){
         		prices[auction] = average;
         	}
@@ -644,9 +713,9 @@ public class AbsMTreeAgent extends AgentImpl {
 //		break;
       case TACAgent.CAT_HOTEL:
 			if (alloc > 0) {
-			  price = 300;
+			  price = 500;
 			  
-			  prices[i] = 300;
+			  prices[i] = 500;
 			}
 			break;
 //      case TACAgent.CAT_ENTERTAINMENT:
